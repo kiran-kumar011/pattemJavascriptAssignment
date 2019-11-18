@@ -138,7 +138,7 @@ const tick = async () => {
 	if(articlesArr.length && timer === 30) {
 		timer = 1;
 		timerElm.innerText = timer;
-		// await reloadMoreData();
+		await reloadMoreData();
 	} else {
 		timer	= timer + 1;
 		timerElm.innerText = timer;
@@ -174,26 +174,6 @@ const staticLoader = async () => {
 
 staticLoader();
 
-let lazyImages = [...document.querySelectorAll('.lazy-image')];
-
-const options = {
-	root: document.querySelector('.articles-wrapper'),
-	rootMargin: '0px 0px 200px 0px'
-}
-
-
-function onIntersection(imageEntities) {
-	imageEntities.forEach(img => {
-		if(img.isIntersecting) {
-			observer.unobserve(img.target)
-			img.target.src = img.target.dataset.src;
-		}
-	})
-}
-
-let observer = new IntersectionObserver(onIntersection, options);
-
-lazyImages.forEach(image => observer.observe(image));
 
 setInterval(tick, 1000);
 
