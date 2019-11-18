@@ -1,4 +1,4 @@
-let articlesArr = [], page = 1, limit = 10, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 0;
+let articlesArr = [], page = 1, limit = 20, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 0;
 
 
 // selecting static elements...
@@ -15,10 +15,8 @@ const displayAllData = (arr) => {
 				`<div class='article'>
 						<div class=${art.urlToImage ? 'image-wrapper' : 'image-wrapper empty-image'}>
 							<img 
-								data-src 
+								data-src=${art.urlToImage ? art.urlToImage : 'http://www.4motiondarlington.org/wp-content/uploads/2013/06/No-image-found.jpg'}
 								class='icon-image lazy-image'
-								src=${art.urlToImage ? art.urlToImage : 'http://www.4motiondarlington.org/wp-content/uploads/2013/06/No-image-found.jpg'}
-								alt="image"
 							/>
 						</div>
 						<div>
@@ -38,7 +36,7 @@ const displayAllData = (arr) => {
 const fetchNewData = async () => {
 	page = 1;
 	fetch(`https://newsapi.org/v2/everything?q=${query}&apiKey=5eddff77effb4574956c391597a288db&pageSize=${limit}&page=${page}`).then(res => res.json()).then(res => {
-			console.log(res, 'response');
+			// console.log(res, 'response');
 			const { totalResults, articles, status } = res;
 			if(status === 'ok' && totalResults) {
 				articlesArr = articles, totalCount = totalResults;
@@ -50,6 +48,7 @@ const fetchNewData = async () => {
 			articlesWrapper.innerHTML = '';
 			articlesWrapper.innerHTML =  data.join('');
 			addListenerToScroll();
+			lazyLoader();
 		}).catch(err => {
 			console.log(err, 'error');
 			errorMessage = 'Something went wrong', articlesArr = [];
@@ -70,6 +69,7 @@ const loadMoreData = () => {
 
 				const data = displayAllData(articlesArr);
 				articlesWrapper.innerHTML =  data.join('');
+				lazyLoader();
 			}).catch(err => {
 				console.log(err, 'error');
 				errorMessage = 'Something went wrong', articlesArr = [];
@@ -91,7 +91,7 @@ const startlistener = () => {
 const addListenerToScroll = () => {
 	window.addEventListener('scroll', () => {
 
-		console.log(window.innerHeight + window.scrollY, 'window scroll', isLoading);
+		// console.log(window.innerHeight + window.scrollY, 'window scroll', isLoading);
 		if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight && !isLoading) {
 			stopListener();
  			loadMoreData();
@@ -126,6 +126,7 @@ const reloadMoreData = () => {
 
 				const data = displayAllData(articlesArr);
 				articlesWrapper.innerHTML =  data.join('');
+				lazyLoader();
 			}).catch(err => {
 				console.log(err, 'error');
 				errorMessage = 'Something went wrong', articlesArr = [];
@@ -175,6 +176,36 @@ const staticLoader = async () => {
 
 staticLoader();
 
+
+function preloadImage(img) {
+	const src = img.getAttribute('data-src');
+	if(!src) {
+		return;
+	}
+	img.src = src;
+}
+
+function lazyLoader() {
+	setTimeout(() => {
+		let images = document.querySelectorAll('[data-src]');
+		console.log(images, 'articles');
+		const options = {};
+
+		const observer = new IntersectionObserver(function(entries, observer) {
+			entries.forEach(entry => {
+				if(!entry.isIntersecting) {
+					return;
+				} else {
+					console.log('isIntersecting');
+					preloadImage(entry.target);
+					observer.unobserve(entry.target);
+				}
+			})
+		}, options);
+
+		images.forEach(img => observer.observe(img));
+	}, 500);
+}
 
 
 
