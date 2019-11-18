@@ -175,7 +175,6 @@ const staticLoader = async () => {
 
 staticLoader();
 
-// const options
 
 
 
