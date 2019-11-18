@@ -170,11 +170,11 @@ const staticLoader = async () => {
 	articlesWrapper.innerHTML = '';
 	articlesWrapper.innerHTML = staticElements;
 	await fetchNewData();
+	setInterval(tick, 1000);
 }
 
 staticLoader();
 
 
-setInterval(tick, 1000);
 
 
