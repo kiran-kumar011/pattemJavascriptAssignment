@@ -176,6 +176,7 @@ const staticLoader = async () => {
 
 staticLoader();
 
+
 function preloadImage(img) {
 	const src = img.getAttribute('data-src');
 	if(!src) {
@@ -205,5 +206,6 @@ function lazyLoader() {
 		images.forEach(img => observer.observe(img));
 	}, 500);
 }
+
 
 
