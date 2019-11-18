@@ -46,6 +46,7 @@ const fetchNewData = async () => {
 		
 			const data = displayAllData(articlesArr);
 			articlesWrapper.innerHTML = '';
+			input.value = query;
 			articlesWrapper.innerHTML =  data.join('');
 			addListenerToScroll();
 			lazyLoader();
