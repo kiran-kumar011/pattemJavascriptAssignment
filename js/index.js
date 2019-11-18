@@ -1,4 +1,4 @@
-let articlesArr = [], page = 1, limit = 20, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 0;
+let articlesArr = [], page = 1, limit = 10, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 0;
 
 
 // selecting static elements...
