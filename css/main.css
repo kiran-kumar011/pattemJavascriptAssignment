@@ -150,9 +150,38 @@ h1 {
   width: 5rem;
   height: 4.1rem; }
 
+@media screen and (max-width: 768px) {
+  :root {
+    font-size: 15px; }
+
+  .article {
+    display: flex;
+    flex-direction: column; }
+
+  .image-wrapper {
+    margin-bottom: 1rem; }
+
+  .article-title {
+    margin: 1rem 0rem 1rem 0rem; }
+
+  .articles-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 0.2rem; } }
 @media screen and (max-width: 500px) {
   :root {
     font-size: 10px; }
+
+  .articles-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin: 2rem 0 0rem 0; }
+
+  .image-wrapper {
+    margin-bottom: 0rem; }
+
+  .article-title {
+    margin: 0rem; }
 
   .article {
     display: grid;
