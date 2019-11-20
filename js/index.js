@@ -110,7 +110,6 @@ const startlistener = () => {
 const addListenerToScroll = () => {
 	window.addEventListener('scroll', () => {
 
-		// console.log(window.innerHeight + window.scrollY, 'window scroll', isLoading);
 		if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight && !isLoading) {
 			stopListener();
  			loadMoreData();
@@ -118,10 +117,12 @@ const addListenerToScroll = () => {
 	})
 }
 
-input.addEventListener('keydown', (e) => {
+input.addEventListener('keydown', async (e) => {
 	if(e.keyCode === 13 && e.target.value.trim()) {
 		query = e.target.value.trim();
-		fetchNewData();
+		await fetchNewData();
+		timer = 30;
+		timerElm.innerText = timer;
 	}
 });
 
