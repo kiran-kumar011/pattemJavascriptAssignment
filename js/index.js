@@ -1,11 +1,14 @@
-let articlesArr = [], page = 1, limit = 10, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 0;
+let articlesArr = [], page = 1, limit = 10, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 30;
 
+
+// take care of card view.
 
 // selecting static elements...
 let articlesWrapper = document.querySelector('.articles-wrapper');
 let input = document.querySelector('.input');
 let searchBtn = document.querySelector('.fa-search');
 let timerElm = document.querySelector('.seconds');
+let error = document.querySelector('.error');
 
 
 const displayAllData = (arr) => {
@@ -16,7 +19,7 @@ const displayAllData = (arr) => {
 						<div class=${art.urlToImage ? 'image-wrapper' : 'image-wrapper empty-image'}>
 							<img 
 								data-src=${art.urlToImage ? art.urlToImage : 'http://www.4motiondarlington.org/wp-content/uploads/2013/06/No-image-found.jpg'}
-								class='icon-image lazy-image'
+								class='icon-image lazy-image static-image-wrapper'
 							/>
 						</div>
 						<div>
@@ -36,25 +39,27 @@ const displayAllData = (arr) => {
 const fetchNewData = async () => {
 	page = 1;
 	fetch(`https://newsapi.org/v2/everything?q=${query}&apiKey=5eddff77effb4574956c391597a288db&pageSize=${limit}&page=${page}`).then(res => res.json()).then(res => {
-			// console.log(res, 'response');
 			const { totalResults, articles, status } = res;
 			if(status === 'ok' && totalResults) {
 				articlesArr = articles, totalCount = totalResults;
-			} else {
-				articlesArr = [], errorMessage = `No results found for ${query}`;
+			} else if(status === 'error') {
+				articlesArr = [], errorMessage = res.message ? res.message : `No results found for ${query}`;
 			}
-		
+
 			const data = displayAllData(articlesArr);
 			articlesWrapper.innerHTML = '';
 			input.value = query;
 			articlesWrapper.innerHTML =  data.join('');
 			addListenerToScroll();
 			lazyLoader();
+			displayError();
 		}).catch(err => {
 			console.log(err, 'error');
 			errorMessage = 'Something went wrong', articlesArr = [];
+			displayError();
 		});
 	isLoading = false;
+	
 }
 
 const loadMoreData = () => {
@@ -71,12 +76,25 @@ const loadMoreData = () => {
 				const data = displayAllData(articlesArr);
 				articlesWrapper.innerHTML =  data.join('');
 				lazyLoader();
+				displayError();
 			}).catch(err => {
 				console.log(err, 'error');
 				errorMessage = 'Something went wrong', articlesArr = [];
+				displayError();
 			});
-
 }
+
+const displayError = () => {
+	if(errorMessage) {
+		error.innerText = errorMessage;
+	}
+	console.log('displayError');
+	setTimeout(() => {
+
+		error.value = '';
+	}, 2000);
+}
+
 
 const stopListener = () => {
 	isLoading = true;
@@ -114,6 +132,8 @@ searchBtn.addEventListener('click', (e) => {
 
 const reloadMoreData = () => {
 	if(articlesArr.length >= totalCount) {
+		errorMessage = 'Showing all the results';
+		displayError();
 		return;
 	} else {
 		let length = articlesArr.length;
@@ -137,12 +157,12 @@ const reloadMoreData = () => {
 
 
 const tick = async () => {
-	if(articlesArr.length && timer === 30) {
-		timer = 1;
+	if(articlesArr.length && timer === 0) {
+		timer = 30;
 		timerElm.innerText = timer;
 		await reloadMoreData();
 	} else {
-		timer	= timer + 1;
+		timer	= timer - 1;
 		timerElm.innerText = timer;
 	}
 }
@@ -186,10 +206,21 @@ function preloadImage(img) {
 	img.src = src;
 }
 
+
+function preloadTitle(para) {
+	const title = para.getAttribute('data-title');
+	if(!title) {
+		return;
+	}
+	para.innerText = title;
+}
+
+
 function lazyLoader() {
 	setTimeout(() => {
 		let images = document.querySelectorAll('[data-src]');
-		console.log(images, 'articles');
+		let titles = document.querySelectorAll('[data-title]');
+		// console.log(images, 'articles');
 		const options = {};
 
 		const observer = new IntersectionObserver(function(entries, observer) {
@@ -197,14 +228,22 @@ function lazyLoader() {
 				if(!entry.isIntersecting) {
 					return;
 				} else {
-					console.log('isIntersecting');
-					preloadImage(entry.target);
+					console.log(entry.target.classList.contains('lazy-image'), 'isIntersecting');
+					if(entry.target.classList.contains('lazy-image')) {
+						preloadImage(entry.target);
+						entry.target.classList.remove('static-image-wrapper');
+						observer.unobserve(entry.target);
+					} else {
+						preloadTitle(entry.target);
+						// entry.target.classList.remove('')
+					}
 					observer.unobserve(entry.target);
 				}
 			})
 		}, options);
 
 		images.forEach(img => observer.observe(img));
+		titles.forEach(titl => observer.observe(titl));
 	}, 500);
 }
 
