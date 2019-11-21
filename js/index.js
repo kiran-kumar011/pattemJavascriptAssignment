@@ -1,11 +1,10 @@
 let articlesArr = [], page = 1, limit = 10, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 30, apiKey = `363d26dd3d664d199ca63adc371e22aa`, isAllDisplayed = false;
 
 
-// change before deploying...
-// APIKey: 5eddff77effb4574956c391597a288db
+// change ("variable apiKey value") if the API request limit has been reached to maximum...
+// APIKey(local) = 5eddff77effb4574956c391597a288db
+// APIKey(Pattem) = 363d26dd3d664d199ca63adc371e22aa
 
-
-// take care of card view.
 
 // selecting static elements...
 let articlesWrapper = document.querySelector('.articles-wrapper');
@@ -20,7 +19,7 @@ const displayAllData = (arr) => {
 		arr.map(art => {
 			return (
 				`<div class='article'>
-						<div class=${art.urlToImage ? 'image-wrapper' : 'image-wrapper empty-image'}>
+						<div class=${art.urlToImage ? 'image-wrapper' : 'image-wrapper'}>
 							<img 
 								data-src=${art.urlToImage ? art.urlToImage : 'http://www.4motiondarlington.org/wp-content/uploads/2013/06/No-image-found.jpg'}
 								class='icon-image lazy-image static-image-wrapper'
@@ -49,7 +48,6 @@ const fetchNewData = async () => {
 			} else if(status === 'error') {
 				articlesArr = [], errorMessage = res.message ? res.message : `No results found for ${query}`;
 			}
-
 			const data = displayAllData(articlesArr);
 			articlesWrapper.innerHTML = '';
 			input.value = query;
@@ -63,7 +61,7 @@ const fetchNewData = async () => {
 				displayError();
 			}
 		}).catch(err => {
-			// console.log(err, 'error');
+			console.log(err, 'error');
 			errorMessage = 'Something went wrong', articlesArr = [];
 			error.innerText = errorMessage;
 			displayError();
@@ -95,6 +93,7 @@ const loadMoreData = () => {
 				displayError();
 			}
 		}).catch(err => {
+			console.log(err, 'error');
 			errorMessage = 'Something went wrong', articlesArr = [];
 			displayError();
 		});
@@ -156,10 +155,8 @@ const reloadMoreData = () => {
 				errorMessage = res.mesage;
 				displayError();
 			}
-			
-			
 		}).catch(err => {
-			// console.log(err, 'error');
+			console.log(err, 'error');
 			errorMessage = 'Something went wrong', articlesArr = [];
 		});
 }
