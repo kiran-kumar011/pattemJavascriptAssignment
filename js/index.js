@@ -1,4 +1,4 @@
-let articlesArr = [], page = 1, limit = 10, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 30, apiKey = `363d26dd3d664d199ca63adc371e22aa`, isAllDisplayed = false;
+let articlesArr = [], page = 1, limit = 10, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 30, apiKey = `5eddff77effb4574956c391597a288db`, isAllDisplayed = false;
 
 
 // change ("variable apiKey value") if the API request limit has been reached to maximum...
