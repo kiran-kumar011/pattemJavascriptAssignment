@@ -1,4 +1,8 @@
-let articlesArr = [], page = 1, limit = 10, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 30;
+let articlesArr = [], page = 1, limit = 10, query = 'reactjs', totalCount = 0, errorMessage, isLoading = true, timer = 30, apiKey = `363d26dd3d664d199ca63adc371e22aa`, isAllDisplayed = false;
+
+
+// change before deploying...
+// APIKey: 5eddff77effb4574956c391597a288db
 
 
 // take care of card view.
@@ -38,7 +42,7 @@ const displayAllData = (arr) => {
 
 const fetchNewData = async () => {
 	page = 1;
-	fetch(`https://newsapi.org/v2/everything?q=${query}&apiKey=5eddff77effb4574956c391597a288db&pageSize=${limit}&page=${page}`).then(res => res.json()).then(res => {
+	fetch(`https://newsapi.org/v2/everything?q=${query}&apiKey=${apiKey}&pageSize=${limit}&page=${page}`).then(res => res.json()).then(res => {
 			const { totalResults, articles, status } = res;
 			if(status === 'ok' && totalResults) {
 				articlesArr = articles, totalCount = totalResults;
@@ -50,17 +54,18 @@ const fetchNewData = async () => {
 			articlesWrapper.innerHTML = '';
 			input.value = query;
 			articlesWrapper.innerHTML =  data.join('');
-			// if(!intervalSet) {
-				
-			// } 
 			timer = 30;
 			timerElm.innerText = timer;
 			addListenerToScroll();
 			lazyLoader();
-			displayError();
+			if(errorMessage) {
+				error.innerText = errorMessage;
+				displayError();
+			}
 		}).catch(err => {
-			console.log(err, 'error');
+			// console.log(err, 'error');
 			errorMessage = 'Something went wrong', articlesArr = [];
+			error.innerText = errorMessage;
 			displayError();
 		});
 	isLoading = false;
@@ -68,36 +73,39 @@ const fetchNewData = async () => {
 }
 
 const loadMoreData = () => {
-	if(articlesArr.length === totalCount) return;
-		page = page + 1;
-		fetch(`https://newsapi.org/v2/everything?q=${query}&apiKey=5eddff77effb4574956c391597a288db&pageSize=${limit}&page=${page}`).then(res => res.json()).then(res => {
-				const { totalResults, articles, status } = res;
-				if(status === 'ok' && totalResults) {
-					articlesArr = articlesArr.concat(articles);
-				} else {
-					articlesArr = [];
-				}
-
+	if(articlesArr.length === totalCount) {
+		errorMessage = 'Displaying all the results', isAllDisplayed = true;
+		error.innerText = errorMessage;
+		displayError();
+		return;
+	}
+	page = page + 1;
+	fetch(`https://newsapi.org/v2/everything?q=${query}&apiKey=${apiKey}&pageSize=${limit}&page=${page}`).then(res => res.json()).then(res => {
+			const { totalResults, articles, status } = res;
+			if(status === 'ok' && totalResults) {
+				articlesArr = articlesArr.concat(articles);
 				const data = displayAllData(articlesArr);
 				articlesWrapper.innerHTML =  data.join('');
 				lazyLoader();
 				displayError();
-			}).catch(err => {
-				console.log(err, 'error');
-				errorMessage = 'Something went wrong', articlesArr = [];
+			} else if(status === 'error') {
+				articlesArr = [];
+				errorMessage = res.message;
+				error.innerText = errorMessage;
 				displayError();
-			});
+			}
+		}).catch(err => {
+			errorMessage = 'Something went wrong', articlesArr = [];
+			displayError();
+		});
 }
 
 const displayError = () => {
-	if(errorMessage) {
-		error.innerText = errorMessage;
-	}
-	console.log('displayError');
 	setTimeout(() => {
-
-		error.value = '';
-	}, 2000);
+		if(!isAllDisplayed) {
+			error.innerText = '';
+		}
+	}, 3000);
 }
 
 
@@ -115,7 +123,7 @@ const startlistener = () => {
 const addListenerToScroll = () => {
 	window.addEventListener('scroll', () => {
 
-		if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight && !isLoading) {
+		if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight && !isLoading && !isAllDisplayed) {
 			stopListener();
  			loadMoreData();
     }
@@ -135,30 +143,25 @@ searchBtn.addEventListener('click', (e) => {
 });
 
 const reloadMoreData = () => {
-	if(articlesArr.length >= totalCount) {
-		errorMessage = 'Showing all the results';
-		displayError();
-		return;
-	} else {
-		let length = articlesArr.length;
-		fetch(`https://newsapi.org/v2/everything?q=${query}&apiKey=5eddff77effb4574956c391597a288db&pageSize=${length}&page=${page}`).then(res => res.json()).then(res => {
-				const { totalResults, articles, status } = res;
-				if(status === 'ok' && totalResults) {
-					articlesArr = articles;
-				} else {
-					articlesArr = [];
-				}
-				if(totalCount === totalResults) {
-					return;
-				}
+	let length = articlesArr.length;
+	fetch(`https://newsapi.org/v2/everything?q=${query}&apiKey=${apiKey}&pageSize=${length ? length : limit}&page=1`).then(res => res.json()).then(res => {
+			const { totalResults, articles, status } = res;
+			if(status === 'ok' && totalResults) {
+				articlesArr = articles, totalCount = totalResults;
 				const data = displayAllData(articlesArr);
 				articlesWrapper.innerHTML =  data.join('');
 				lazyLoader();
-			}).catch(err => {
-				console.log(err, 'error');
-				errorMessage = 'Something went wrong', articlesArr = [];
-			});
-	}
+			} else if(status === 'error') {
+				articlesArr = [];
+				errorMessage = res.mesage;
+				displayError();
+			}
+			
+			
+		}).catch(err => {
+			// console.log(err, 'error');
+			errorMessage = 'Something went wrong', articlesArr = [];
+		});
 }
 
 
@@ -207,22 +210,12 @@ staticLoader();
 function preloadImage(img) {
 	const src = img.getAttribute('data-src');
 	img.removeAttribute('data-src');
-	console.log(img, 'atribute')
+	// console.log(img, 'atribute')
 	if(!src) {
 		return;
 	}
 	img.src = src;
 }
-
-
-// function preloadTitle(para) {
-// 	const title = para.getAttribute('data-title');
-// 	// pararemoveAttribute
-// 	if(!title) {
-// 		return;
-// 	}
-// 	para.innerText = title;
-// }
 
 
 function lazyLoader() {
