@@ -50,6 +50,11 @@ const fetchNewData = async () => {
 			articlesWrapper.innerHTML = '';
 			input.value = query;
 			articlesWrapper.innerHTML =  data.join('');
+			// if(!intervalSet) {
+				
+			// } 
+			timer = 30;
+			timerElm.innerText = timer;
 			addListenerToScroll();
 			lazyLoader();
 			displayError();
@@ -59,7 +64,7 @@ const fetchNewData = async () => {
 			displayError();
 		});
 	isLoading = false;
-	
+	return;
 }
 
 const loadMoreData = () => {
@@ -121,8 +126,6 @@ input.addEventListener('keydown', async (e) => {
 	if(e.keyCode === 13 && e.target.value.trim()) {
 		query = e.target.value.trim();
 		await fetchNewData();
-		timer = 30;
-		timerElm.innerText = timer;
 	}
 });
 
@@ -145,7 +148,9 @@ const reloadMoreData = () => {
 				} else {
 					articlesArr = [];
 				}
-
+				if(totalCount === totalResults) {
+					return;
+				}
 				const data = displayAllData(articlesArr);
 				articlesWrapper.innerHTML =  data.join('');
 				lazyLoader();
@@ -158,7 +163,7 @@ const reloadMoreData = () => {
 
 
 const tick = async () => {
-	if(articlesArr.length && timer === 0) {
+	if(articlesArr.length && timer === 0 || timer <= 0 ) {
 		timer = 30;
 		timerElm.innerText = timer;
 		await reloadMoreData();
@@ -201,6 +206,8 @@ staticLoader();
 
 function preloadImage(img) {
 	const src = img.getAttribute('data-src');
+	img.removeAttribute('data-src');
+	console.log(img, 'atribute')
 	if(!src) {
 		return;
 	}
@@ -208,20 +215,20 @@ function preloadImage(img) {
 }
 
 
-function preloadTitle(para) {
-	const title = para.getAttribute('data-title');
-	if(!title) {
-		return;
-	}
-	para.innerText = title;
-}
+// function preloadTitle(para) {
+// 	const title = para.getAttribute('data-title');
+// 	// pararemoveAttribute
+// 	if(!title) {
+// 		return;
+// 	}
+// 	para.innerText = title;
+// }
 
 
 function lazyLoader() {
 	setTimeout(() => {
 		let images = document.querySelectorAll('[data-src]');
-		let titles = document.querySelectorAll('[data-title]');
-		// console.log(images, 'articles');
+
 		const options = {};
 
 		const observer = new IntersectionObserver(function(entries, observer) {
@@ -229,23 +236,15 @@ function lazyLoader() {
 				if(!entry.isIntersecting) {
 					return;
 				} else {
-					console.log(entry.target.classList.contains('lazy-image'), 'isIntersecting');
-					if(entry.target.classList.contains('lazy-image')) {
-						preloadImage(entry.target);
-						entry.target.classList.remove('static-image-wrapper');
-						observer.unobserve(entry.target);
-					} else {
-						preloadTitle(entry.target);
-						// entry.target.classList.remove('')
-					}
+					preloadImage(entry.target);
+					entry.target.classList.remove('static-image-wrapper');
 					observer.unobserve(entry.target);
 				}
 			})
 		}, options);
 
 		images.forEach(img => observer.observe(img));
-		titles.forEach(titl => observer.observe(titl));
-	}, 500);
+	}, 100);
 }
 
 
